@@ -1,0 +1,119 @@
+# ARIA Dispatcher v3 – GUI + Telegram + Voice + Dashboard (Upgraded)
+
+        import threading
+    try:
+        import tkinter
+except ImportError:
+    tkinter = None as tk
+try:
+            import pyttsx3
+except ImportError:
+    pyttsx3 = None
+        import telebot
+        import os
+from dotenv         import load_dotenv
+from flask         import Flask, jsonify
+
+from freelance_empire_bot         import FreelanceEmpireBot
+from income_core         import IncomeAutomationCore
+from strategy_reflex         import StrategyReflexEngine
+
+# Shared context
+context = {
+    "memory": [],
+    "signals": {},
+    "portfolio": {"AAPL": {}, "TSLA": {}},
+    "status": [],
+    "strategy": {},
+    "income": {},
+    "compliance": {},
+    "emotions": [],
+    "command_tree": [],
+    "mode": "smart"
+}
+
+# VOICE
+engine = pyttsx3.init()
+def speak(msg):
+    threading.Thread(target=lambda: (engine.say(msg), engine.runAndWait())).start()
+
+# FLASK DASHBOARD
+app = Flask(__name__)
+
+@app.route("/status")
+def get_status():
+    return jsonify({
+        "status": context["status"],
+        "mode": context.get("mode", "unknown"),
+        "signals": context.get("signals", {})
+    })
+
+
+@app.route("/memory")
+def get_memory():
+    return jsonify({"memory": context["memory"][-10:]})
+
+@app.route("/pnl")
+def get_income():
+    income = IncomeAutomationCore()
+    income.add_income("Freelance", 100)
+    summary = income.get_income_summary()
+    return jsonify(summary)
+
+# TELEGRAM BOT
+load_dotenv()
+telegram_token = os.getenv("TELEGRAM_TOKEN")
+bot = telebot.TeleBot(telegram_token)
+
+@bot.message_handler(commands=["start"])
+def handle_start(message):
+    bot.send_message(message.chat.id, "Aria Online. Awaiting command.")
+
+@bot.message_handler(commands=["status"])
+def handle_hi_aria(context):
+    summary = f"MODE: {context['mode']}"
+    summary += f" STATUS: {context['status'][-3:]}"
+    return summary
+
+@bot.message_handler(commands=["memory"])
+def handle_memory(message):
+    recent = context["memory"][-5:]
+    bot.send_message(message.chat.id, "\n".join(recent))
+
+@bot.message_handler(commands=["launch_freelance"])
+def handle_freelance(message):
+    bot.send_message(message.chat.id, "Launching Freelance Bot...")
+    result = FreelanceEmpireBot().run()
+    for job in result:
+        bot.send_message(message.chat.id, job)
+
+# GUI
+def launch_gui():
+    root = tk.Tk()
+    root.title("ARIA Dispatcher (Dashboard Mode)")
+    tk.Label(root, text="ARIA v3 Command Center").pack(pady=10)
+
+    mode_label = tk.Label(root, text="MODE: Smart")
+    mode_label.pack()
+
+    log_box = tk.Text(root, height=15, width=70)
+    log_box.pack(pady=10)
+
+    def launch_freelance_gui():
+        result = FreelanceEmpireBot().run()
+        for job in result:
+            log_box.insert(tk.END, job + "\n")
+            speak(job)
+
+    tk.Button(root, text="Launch Freelance Income Bot", command=launch_freelance_gui).pack(pady=5)
+
+    root.mainloop()
+
+# Start services
+def run_all():
+    threading.Thread(target=launch_gui).start()
+    threading.Thread(target=bot.polling, daemon=True).start()
+    threading.Thread(target=app.run, kwargs={"port": 7860}, daemon=True).start()
+
+if __name__ == "__main__":
+    run_all()

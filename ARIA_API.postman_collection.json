@@ -1,0 +1,132 @@
+{
+  "info": {
+    "name": "ARIA API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Get Clone Status",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-API-KEY",
+            "value": "supersecretkey"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8093/api/status",
+          "host": [
+            "localhost"
+          ],
+          "port": "8093",
+          "path": [
+            "api",
+            "status"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Assign Mission",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-API-KEY",
+            "value": "supersecretkey"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"mission\": \"Analyze BTC Sweep\" }"
+        },
+        "url": {
+          "raw": "http://localhost:8093/api/assign",
+          "host": [
+            "localhost"
+          ],
+          "port": "8093",
+          "path": [
+            "api",
+            "assign"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Income Report",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-API-KEY",
+            "value": "supersecretkey"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8093/api/income",
+          "host": [
+            "localhost"
+          ],
+          "port": "8093",
+          "path": [
+            "api",
+            "income"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Dispatch Engines",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-API-KEY",
+            "value": "supersecretkey"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8093/api/dispatch",
+          "host": [
+            "localhost"
+          ],
+          "port": "8093",
+          "path": [
+            "api",
+            "dispatch"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Clone Memory Lookup",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-API-KEY",
+            "value": "supersecretkey"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8093/api/memory/Aria_Trader",
+          "host": [
+            "localhost"
+          ],
+          "port": "8093",
+          "path": [
+            "api",
+            "memory",
+            "Aria_Trader"
+          ]
+        }
+      }
+    }
+  ]
+}
