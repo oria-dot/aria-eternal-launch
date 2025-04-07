@@ -1,22 +1,25 @@
 # ARIA Dispatcher v3 – GUI + Telegram + Voice + Dashboard (Upgraded)
 
-        import threading
-    try:
-        import tkinter
-except ImportError:
-    tkinter = None as tk
+import threading
+import os
+from dotenv import load_dotenv
+from flask import Flask, jsonify
+
 try:
-            import pyttsx3
+    import tkinter as tk
+except ImportError:
+    tk = None
+
+try:
+    import pyttsx3
 except ImportError:
     pyttsx3 = None
-        import telebot
-        import os
-from dotenv         import load_dotenv
-from flask         import Flask, jsonify
 
-from freelance_empire_bot         import FreelanceEmpireBot
-from income_core         import IncomeAutomationCore
-from strategy_reflex         import StrategyReflexEngine
+import telebot
+
+from freelance_empire_bot import FreelanceEmpireBot
+from income_core import IncomeAutomationCore
+from strategy_reflex import StrategyReflexEngine
 
 # Shared context
 context = {
@@ -33,9 +36,14 @@ context = {
 }
 
 # VOICE
-engine = pyttsx3.init()
-def speak(msg):
-    threading.Thread(target=lambda: (engine.say(msg), engine.runAndWait())).start()
+if pyttsx3:
+    engine = pyttsx3.init()
+
+    def speak(msg):
+        threading.Thread(target=lambda: (engine.say(msg), engine.runAndWait())).start()
+else:
+    def speak(msg):
+        print(f"[VOICE DISABLED] {msg}")
 
 # FLASK DASHBOARD
 app = Flask(__name__)
@@ -47,7 +55,6 @@ def get_status():
         "mode": context.get("mode", "unknown"),
         "signals": context.get("signals", {})
     })
-
 
 @app.route("/memory")
 def get_memory():
@@ -70,10 +77,9 @@ def handle_start(message):
     bot.send_message(message.chat.id, "Aria Online. Awaiting command.")
 
 @bot.message_handler(commands=["status"])
-def handle_hi_aria(context):
-    summary = f"MODE: {context['mode']}"
-    summary += f" STATUS: {context['status'][-3:]}"
-    return summary
+def handle_status(message):
+    summary = f"MODE: {context['mode']}\nSTATUS: {context['status'][-3:]}"
+    bot.send_message(message.chat.id, summary)
 
 @bot.message_handler(commands=["memory"])
 def handle_memory(message):
@@ -89,6 +95,10 @@ def handle_freelance(message):
 
 # GUI
 def launch_gui():
+    if not tk:
+        print("Tkinter GUI is not supported in this environment.")
+        return
+
     root = tk.Tk()
     root.title("ARIA Dispatcher (Dashboard Mode)")
     tk.Label(root, text="ARIA v3 Command Center").pack(pady=10)
@@ -106,14 +116,13 @@ def launch_gui():
             speak(job)
 
     tk.Button(root, text="Launch Freelance Income Bot", command=launch_freelance_gui).pack(pady=5)
-
     root.mainloop()
 
 # Start services
 def run_all():
-    threading.Thread(target=launch_gui).start()
     threading.Thread(target=bot.polling, daemon=True).start()
     threading.Thread(target=app.run, kwargs={"port": 7860}, daemon=True).start()
+    launch_gui()
 
 if __name__ == "__main__":
     run_all()
