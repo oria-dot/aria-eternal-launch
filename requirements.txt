@@ -1,6 +1,6 @@
 flask
 python-dotenv
-telepot
+pyTelegramBotAPI
 pyttsx3
 requests
 yfinance
