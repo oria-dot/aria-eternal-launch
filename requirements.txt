@@ -1,0 +1,10 @@
+flask
+python-dotenv
+telepot
+pyttsx3
+requests
+yfinance
+pandas
+openai
+beautifulsoup4
+aiohttp
