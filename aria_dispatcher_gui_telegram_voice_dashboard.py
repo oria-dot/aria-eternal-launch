@@ -35,15 +35,17 @@ context = {
     "mode": "smart"
 }
 
-# VOICE
-if pyttsx3:
-    engine = pyttsx3.init()
+# VOICE (Cloud-safe)
+def speak(msg):
+    try:
+        if pyttsx3:
+            engine = pyttsx3.init()
+            threading.Thread(target=lambda: (engine.say(msg), engine.runAndWait())).start()
+        else:
+            print(f"[VOICE DISABLED] {msg}")
+    except Exception as e:
+        print(f"[VOICE ERROR] {e}")
 
-    def speak(msg):
-        threading.Thread(target=lambda: (engine.say(msg), engine.runAndWait())).start()
-else:
-    def speak(msg):
-        print(f"[VOICE DISABLED] {msg}")
 
 # FLASK DASHBOARD
 app = Flask(__name__)
