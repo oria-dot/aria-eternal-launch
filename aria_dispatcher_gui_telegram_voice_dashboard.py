@@ -95,10 +95,16 @@ def handle_freelance(message):
     for job in result:
         bot.send_message(message.chat.id, job)
 
+import sys
+
 # GUI
 def launch_gui():
     if not tk:
-        print("Tkinter GUI is not supported in this environment.")
+        print("[GUI DISABLED] Tkinter is not available in this environment.")
+        return
+
+    if "RENDER" in os.environ or os.getenv("DISABLE_GUI") == "1" or "linux" in sys.platform:
+        print("[GUI DISABLED] Running in headless server mode.")
         return
 
     root = tk.Tk()
@@ -119,6 +125,7 @@ def launch_gui():
 
     tk.Button(root, text="Launch Freelance Income Bot", command=launch_freelance_gui).pack(pady=5)
     root.mainloop()
+
 
 # Start services
 def run_all():
