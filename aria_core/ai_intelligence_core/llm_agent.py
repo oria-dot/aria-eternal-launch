@@ -1,32 +1,35 @@
-import openai
-import os
-from loguru import logger
+# llm_agent.py – Aria's Decision Agent powered by LLMs
 
 class LLMDecisionAgent:
-    def __init__(self, model="gpt-4-turbo", api_key=None):
-        self.api_key = api_key or os.getenv("OPENAI_API_KEY")
-        self.model = model
-        openai.api_key = self.api_key
+    def __init__(self, context):
+        self.context = context
 
-    def reason_about_market(self, signal_data):
+    def reason_about_market(self, signal):
         try:
-            messages = [
-                {"role": "system", "content": "You are a market decision-making AI assistant."},
-                {"role": "user", "content": f"Analyze the following signal data and decide whether to BUY, HOLD, or SELL:"
-{signal_data}"}"
-            ]
-            response = openai.ChatCompletion.create(
-                model=self.model,
-                messages=messages
-            )
+            # Example of signal input:
+            # {"sentiment": 0.45, "trend": "up", "volatility": "medium"}
 
-            content = response["choices"][0]["message"]["content"]
+            sentiment = signal.get("sentiment", 0)
+            trend = signal.get("trend", "neutral")
+            volatility = signal.get("volatility", "medium")
+
+            # Basic AI-style logic (can be replaced with real OpenAI/LLM chain)
+            thought = f"Trend: {trend}, Sentiment: {sentiment}, Volatility: {volatility}"
+
+            if trend == "up" and sentiment > 0.3:
+                decision = "BUY"
+            elif trend == "down" and sentiment < -0.3:
+                decision = "SELL"
+            else:
+                decision = "HOLD"
+
             return {
-                "thought": f"LLM Response: {content}",
-                "decision": content.strip().split()[0].upper()  # naive first-word command
+                "thought": thought,
+                "decision": decision
             }
+
         except Exception as e:
-            logger.error(f"LLM agent failed: {e}")
-            from aria_core.memory_core.gpt_snapshot_writer import save_gpt_thought
-        save_gpt_thought(content, decision=content.strip().split()[0].upper())
-        return {"thought": "LLM unavailable", "decision": "HOLD"}
+            return {
+                "thought": f"LLM Agent encountered error: {str(e)}",
+                "decision": "HOLD"
+            }
