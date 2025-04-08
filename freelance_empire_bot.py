@@ -26,8 +26,9 @@ class FreelanceEmpireBot:
         return applied_jobs
 
     def run(self):
-    pass
-    try:
+        try:
             self.status = 'Scanning Freelance Platforms'
             jobs = self.scan_opportunities()
             return self.auto_apply(jobs)
+        except Exception as e:
+            return [f"Error running bot: {str(e)}"]
