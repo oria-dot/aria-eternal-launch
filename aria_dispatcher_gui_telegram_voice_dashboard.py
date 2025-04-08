@@ -2,6 +2,8 @@
 
 import threading
 import os
+import sys
+import time
 from dotenv import load_dotenv
 from flask import Flask, jsonify
 
@@ -16,6 +18,7 @@ except ImportError:
     pyttsx3 = None
 
 import telebot
+from telebot import types
 
 from freelance_empire_bot import FreelanceEmpireBot
 from income_core import IncomeAutomationCore
@@ -95,7 +98,39 @@ def handle_freelance(message):
     for job in result:
         bot.send_message(message.chat.id, job)
 
-import sys
+@bot.message_handler(func=lambda msg: msg.text and msg.text.lower() == "hi aria")
+def handle_hi_aria(message):
+    memory_count = len(context.get("memory", []))
+    signals_count = len(context.get("signals", {}))
+    portfolio = ', '.join(context.get("portfolio", {}).keys())
+    mode = context.get("mode", "unknown")
+
+    summary = f"""🧠 Good day, Commander.
+
+✨ ARIA Operational Brief:
+- Mode: {mode}
+- Memory Logs: {memory_count}
+- Signals Tracked: {signals_count}
+- Portfolio: {portfolio or 'None'}
+- Freelance Bot: ✅ Ready"""
+
+    bot.send_message(message.chat.id, summary)
+
+    markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    btns = [
+        "/status", "/memory", "/pnl", "/dashboard",
+        "/launch_freelance", "/income_summary",
+        "/strategy_status", "/run_marketing",
+        "/launch_clone", "/clone_status"
+    ]
+    for i in range(0, len(btns), 2):
+        markup.add(*btns[i:i+2])
+
+    bot.send_message(message.chat.id, "📟 Command Panel:", reply_markup=markup)
+
+@bot.message_handler(commands=["help"])
+def handle_help(message):
+    handle_hi_aria(message)
 
 # GUI
 def launch_gui():
@@ -126,10 +161,7 @@ def launch_gui():
     tk.Button(root, text="Launch Freelance Income Bot", command=launch_freelance_gui).pack(pady=5)
     root.mainloop()
 
-
 # Start services
-import time
-
 def run_all():
     print("[ARIA] Booting all services...")
 
