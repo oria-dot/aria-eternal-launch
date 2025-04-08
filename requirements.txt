@@ -1,10 +1,5 @@
 flask
 python-dotenv
-pyTelegramBotAPI
+telebot
 pyttsx3
-requests
-yfinance
-pandas
-openai
-beautifulsoup4
-aiohttp
+reportlab
