@@ -128,10 +128,18 @@ def launch_gui():
 
 
 # Start services
+import time
+
 def run_all():
+    print("[ARIA] Booting all services...")
+
     threading.Thread(target=bot.polling, daemon=True).start()
     threading.Thread(target=app.run, kwargs={"host": "0.0.0.0", "port": 10000}, daemon=True).start()
     launch_gui()
+
+    # Keeps the app alive to avoid shutdown crash
+    while True:
+        time.sleep(10)
 
 if __name__ == "__main__":
     run_all()
