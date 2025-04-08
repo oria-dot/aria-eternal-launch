@@ -1,1 +1,0 @@
-ARIA Dispatcher main script with Universal Payment Core and all upgrades.
