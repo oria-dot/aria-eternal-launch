@@ -130,7 +130,7 @@ def launch_gui():
 # Start services
 def run_all():
     threading.Thread(target=bot.polling, daemon=True).start()
-    threading.Thread(target=app.run, kwargs={"port": 7860}, daemon=True).start()
+    threading.Thread(target=app.run, kwargs={"host": "0.0.0.0", "port": 10000}, daemon=True).start()
     launch_gui()
 
 if __name__ == "__main__":
