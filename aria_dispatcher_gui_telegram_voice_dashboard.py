@@ -1,4 +1,4 @@
-# ARIA Dispatcher v3 – GUI + Telegram + Voice + Dashboard (Upgraded)
+# ARIA Dispatcher v3 – Supreme Upgrade Protocol (Unified)
 
 import threading
 import os
@@ -30,12 +30,13 @@ context = {
     "signals": {},
     "portfolio": {"AAPL": {}, "TSLA": {}},
     "status": [],
-    "strategy": {},
-    "income": {},
+    "strategy": {"mode": "smart", "last": "BUY AAPL"},
+    "income": {"Freelance": 100},
     "compliance": {},
-    "emotions": [],
+    "emotions": ["Stable", "Optimistic"],
     "command_tree": [],
-    "mode": "smart"
+    "mode": "smart",
+    "llm_thoughts": ["Market trending up.", "Sentiment positive.", "Deploying Freelance Bot."]
 }
 
 # VOICE (Cloud-safe)
@@ -48,7 +49,6 @@ def speak(msg):
             print(f"[VOICE DISABLED] {msg}")
     except Exception as e:
         print(f"[VOICE ERROR] {e}")
-
 
 # FLASK DASHBOARD
 app = Flask(__name__)
@@ -65,12 +65,29 @@ def get_status():
 def get_memory():
     return jsonify({"memory": context["memory"][-10:]})
 
+@app.route("/memory_full")
+def memory_full():
+    return jsonify({"memory": context["memory"]})
+
 @app.route("/pnl")
 def get_income():
-    income = IncomeAutomationCore()
-    income.add_income("Freelance", 100)
-    summary = income.get_income_summary()
-    return jsonify(summary)
+    return jsonify(context["income"])
+
+@app.route("/trades")
+def trades():
+    return jsonify({"last_trade": context["strategy"].get("last", "N/A")})
+
+@app.route("/strategy_status")
+def strategy_status():
+    return jsonify(context["strategy"])
+
+@app.route("/llm_brain")
+def llm_brain():
+    return jsonify({"thoughts": context["llm_thoughts"]})
+
+@app.route("/emotions")
+def emotions():
+    return jsonify({"emotions": context.get("emotions", [])})
 
 # TELEGRAM BOT
 load_dotenv()
@@ -98,12 +115,46 @@ def handle_freelance(message):
     for job in result:
         bot.send_message(message.chat.id, job)
 
+@bot.message_handler(commands=["speak"])
+def handle_speak(message):
+    msg = message.text.replace("/speak", "").strip()
+    if msg:
+        speak(msg)
+        bot.send_message(message.chat.id, f"Speaking: {msg}")
+
+@bot.message_handler(commands=["mute"])
+def handle_mute(message):
+    global pyttsx3
+    pyttsx3 = None
+    bot.send_message(message.chat.id, "🔇 Voice has been disabled.")
+
+@bot.message_handler(commands=["strategy_status"])
+def handle_strategy(message):
+    summary = context.get("strategy", {})
+    bot.send_message(message.chat.id, f"Strategy Mode: {summary.get('mode')}\nLast Signal: {summary.get('last')}")
+
+@bot.message_handler(commands=["income_summary"])
+def handle_income(message):
+    income = context.get("income", {})
+    summary = "\n".join([f"{k}: ${v}" for k, v in income.items()])
+    bot.send_message(message.chat.id, f"💰 Income Summary:\n{summary}")
+
+@bot.message_handler(commands=["reset_memory"])
+def reset_memory(message):
+    context["memory"] = []
+    bot.send_message(message.chat.id, "🧠 Memory wiped clean.")
+
 @bot.message_handler(func=lambda msg: msg.text and msg.text.lower() == "hi aria")
 def handle_hi_aria(message):
     memory_count = len(context.get("memory", []))
     signals_count = len(context.get("signals", {}))
     portfolio = ', '.join(context.get("portfolio", {}).keys())
     mode = context.get("mode", "unknown")
+
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    markup.row("/status", "/memory", "/pnl")
+    markup.row("/launch_freelance", "/strategy_status")
+    markup.row("/help", "/reset_memory")
 
     summary = f"""🧠 Good day, Commander.
 
@@ -112,25 +163,29 @@ def handle_hi_aria(message):
 - Memory Logs: {memory_count}
 - Signals Tracked: {signals_count}
 - Portfolio: {portfolio or 'None'}
-- Freelance Bot: ✅ Ready"""
+- Freelance Bot: ✅ Ready
 
-    bot.send_message(message.chat.id, summary)
-
-    markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-    btns = [
-        "/status", "/memory", "/pnl", "/dashboard",
-        "/launch_freelance", "/income_summary",
-        "/strategy_status", "/run_marketing",
-        "/launch_clone", "/clone_status"
-    ]
-    for i in range(0, len(btns), 2):
-        markup.add(*btns[i:i+2])
-
-    bot.send_message(message.chat.id, "📟 Command Panel:", reply_markup=markup)
+Use /help to see all available commands.
+"""
+    bot.send_message(message.chat.id, summary, reply_markup=markup)
 
 @bot.message_handler(commands=["help"])
 def handle_help(message):
-    handle_hi_aria(message)
+    commands = [
+        "/start — Boot ARIA",
+        "/status — System status",
+        "/memory — Show memory logs",
+        "/pnl — Income summary",
+        "/dashboard — Link to live dashboard",
+        "/launch_freelance — Deploy income bot",
+        "/income_summary — Show income",
+        "/strategy_status — AI trading info",
+        "/speak <msg> — Voice response",
+        "/mute — Disable voice",
+        "/reset_memory — Wipe memory",
+        "/hi aria — Quick summary"
+    ]
+    bot.send_message(message.chat.id, "🧭 Available Commands:\n" + "\n".join(commands))
 
 # GUI
 def launch_gui():
